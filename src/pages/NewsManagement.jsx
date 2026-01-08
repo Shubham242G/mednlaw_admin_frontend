@@ -3,7 +3,7 @@ import axios from 'axios';
 import NewsTable from '../components/NewsTable';
 import NewsForm from '../components/NewsForm';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL;;
 
 export default function NewsManagement() {
   const [showForm, setShowForm] = useState(false);

@@ -3,7 +3,7 @@ import axios from 'axios';
 import BlogTable from '../components/BlogTable';
 import BlogForm from '../components/BlogForm';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL;
 
 export default function BlogManagement() {
   const [showForm, setShowForm] = useState(false);
