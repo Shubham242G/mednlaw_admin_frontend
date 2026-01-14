@@ -10,10 +10,25 @@ export default function BlogManagement() {
   const [editingBlog, setEditingBlog] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const handleEdit = (blog) => {
-    setEditingBlog(blog);
+  const handleEdit = async (blogId) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(
+      `${API_URL}/blogs/${blogId}`,
+      { headers: { "x-auth-token": token } }
+    );
+
+    console.log("FULL BLOG FETCHED:", res.data);
+
+    setEditingBlog(res.data);
     setShowForm(true);
-  };
+  } catch (err) {
+    console.error("Failed to fetch blog:", err);
+    alert("Failed to load blog for editing");
+  }
+};
+
 
   const handleDelete = async (blogId) => {
     if (!window.confirm('Are you sure you want to delete this blog?')) return;
@@ -75,10 +90,10 @@ export default function BlogManagement() {
 
       {showForm ? (
         <BlogForm
-          blog={editingBlog}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-        />
+  initialData={editingBlog}
+  onSubmit={handleSubmit}
+  onClose={handleCancel}
+/>
       ) : (
         <BlogTable
           onEdit={handleEdit}

@@ -1,18 +1,19 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import BlogManagement from './pages/BlogManagement';
 import TestimonialManagement from './pages/TestimonialManagement';
-import NewsManagement from './pages/NewsManagement';  // ADD THIS
+import NewsManagement from './pages/NewsManagement';
 
-function AdminLayout({ children }) {
+export function AdminLayout() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/login';
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -20,21 +21,29 @@ function AdminLayout({ children }) {
       <nav className="bg-blue-600 text-white p-4 shadow-lg">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">MednLaw Admin Panel</h1>
+
           <div className="flex gap-6 items-center">
-            <span className="text-sm ">Welcome, {user?.name || 'User'}</span>
-            <Link to="/admin/blogs" className="hover:underline">Blogs</Link>
-            <Link to="/admin/news" className="hover:underline">News</Link>  {/* ADD THIS */}
-            <Link to="/admin/testimonials" className="hover:underline">Testimonials</Link>
+            <span className="text-sm">
+              Welcome, {user?.name || 'User'}
+            </span>
+
+            <Link to="/admin/blogs">Blogs</Link>
+            <Link to="/admin/news">News</Link>
+            <Link to="/admin/testimonials">Testimonials</Link>
+
             <button
               onClick={handleLogout}
-              className="bg-red-500 px-4 py-2 rounded hover:bg-red-600 transition"
+              className="bg-red-500 px-4 py-2 rounded"
             >
               Logout
             </button>
           </div>
         </div>
       </nav>
-      <main className="container mx-auto py-6">{children}</main>
+
+      <main className="container mx-auto py-6">
+        <Outlet />
+      </main>
     </div>
   );
 }
@@ -44,48 +53,24 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes */}
+
+          {/* Public */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected Routes */}
-          <Route
-            path="/admin/blogs"
-            element={
-              <ProtectedRoute>
-                <AdminLayout>
-                  <BlogManagement />
-                </AdminLayout>
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* ADD NEWS ROUTE */}
-          <Route
-            path="/admin/news"
-            element={
-              <ProtectedRoute>
-                <AdminLayout>
-                  <NewsManagement />
-                </AdminLayout>
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/admin/testimonials"
-            element={
-              <ProtectedRoute>
-                <AdminLayout>
-                  <TestimonialManagement />
-                </AdminLayout>
-              </ProtectedRoute>
-            }
-          />
+          {/* Protected */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="blogs" replace />} />
+              <Route path="blogs/*" element={<BlogManagement />} />
+              <Route path="news" element={<NewsManagement />} />
+              <Route path="testimonials" element={<TestimonialManagement />} />
+            </Route>
+          </Route>
 
-          {/* Default Redirect */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/login" replace />} />
+
         </Routes>
       </Router>
     </AuthProvider>

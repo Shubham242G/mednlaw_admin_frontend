@@ -2,8 +2,20 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-export default function BlogForm({ onSubmit, onClose, initialData = null }) {
+/* ================= QUILL TOOLBAR ================= */
+const modules = {
+  toolbar: [
+    [{ header: [1, 2, 3, 4, false] }],
+    ["bold", "italic", "underline"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["link"],
+    ["clean"],
+  ],
+};
+
+export default function BlogForm({ onSubmit, onClose, initialData }) {
   const submittingRef = useRef(false);
+  console.log("BlogForm render — initialData:", initialData);
 
   const [form, setForm] = useState({
     title: "",
@@ -17,6 +29,27 @@ export default function BlogForm({ onSubmit, onClose, initialData = null }) {
   const [content, setContent] = useState("");
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  /* ================= POPULATE ON EDIT ================= */
+  useEffect(() => {
+    if (!initialData) return;
+
+    console.log("EDIT DATA RECEIVED:", initialData);
+
+    setForm({
+      title: initialData.title ?? "",
+      summary: initialData.summary ?? "",
+      date: initialData.date
+        ? new Date(initialData.date).toISOString().split("T")[0]
+        : "",
+      seoFocusKeyword: initialData.seoFocusKeyword ?? "",
+      seoTitle: initialData.seoTitle ?? "",
+      seoMetaDescription: initialData.seoMetaDescription ?? "",
+    });
+
+    setContent(initialData.content ?? "");
+    setFiles(initialData.images ?? []);
+  }, [initialData]);
 
   /* ================= TEXT INPUT ================= */
   function handleChange(e) {
@@ -49,11 +82,10 @@ export default function BlogForm({ onSubmit, onClose, initialData = null }) {
     }
   }
 
-  /* ================= SUBMIT (FIXED) ================= */
+  /* ================= SUBMIT ================= */
   async function handleSubmit(e) {
     e.preventDefault();
 
-    // 🚨 HARD STOP FOR DOUBLE SUBMIT
     if (submittingRef.current) return;
     submittingRef.current = true;
     setLoading(true);
@@ -66,7 +98,7 @@ export default function BlogForm({ onSubmit, onClose, initialData = null }) {
         date: new Date(form.date),
       };
 
-      await onSubmit(payload); // MUST be awaited
+      await onSubmit(payload);
     } catch (err) {
       console.error("Blog submit error:", err);
     } finally {
@@ -74,36 +106,6 @@ export default function BlogForm({ onSubmit, onClose, initialData = null }) {
       setLoading(false);
     }
   }
-
-  /* ================= LOAD EDIT DATA ================= */
-  useEffect(() => {
-    if (!initialData) return;
-
-    setForm({
-      title: initialData.title || "",
-      summary: initialData.summary || "",
-      date: initialData.date
-        ? new Date(initialData.date).toISOString().split("T")[0]
-        : "",
-      seoFocusKeyword: initialData.seoFocusKeyword || "",
-      seoTitle: initialData.seoTitle || "",
-      seoMetaDescription: initialData.seoMetaDescription || "",
-    });
-
-    setContent(initialData.content || "");
-    setFiles(initialData.images || []);
-  }, [initialData]);
-
-  /* ================= QUILL TOOLBAR ================= */
-  const modules = {
-    toolbar: [
-      [{ header: [1, 2, 3, 4, false] }],
-      ["bold", "italic", "underline"],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["link"],
-      ["clean"],
-    ],
-  };
 
   /* ================= UI ================= */
   return (

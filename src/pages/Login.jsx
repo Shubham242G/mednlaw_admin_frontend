@@ -36,8 +36,8 @@ export default function Login() {
     const result = await login(formData);
     
     if (result.success) {
-      navigate('/admin/blogs');
-    } else {
+  navigate('/admin/blogs', { replace: true });
+}else {
       setLocalError(result.error);
     }
     
